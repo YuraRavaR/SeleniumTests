@@ -6,17 +6,21 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.pages.amazonPages.MainPage;
 import org.pages.amazonPages.SearchPage;
+import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +33,8 @@ public class BaseDefinitions {
     private SearchPage searchPage;
     private org.pages.rozetkaPages.MainPage secondMainPage;
     private org.pages.rozetkaPages.SearchPage secondSearchPage;
+
+    private Set<String> initialWindowHandles;
 
     @Given("SetUP and open URL: {string}")
     public void SetUP(String url) {
@@ -82,6 +88,29 @@ public class BaseDefinitions {
             softAssert.assertTrue(matcher.find(), "Item doesn't contain " + substring + " : " + text);
             softAssert.assertAll();
         }
+    }
+
+    @When("User opens a new window with URL {string}")
+    public void openNewWindow(String url) {
+        String currentWindowHandle = driver.getWindowHandle();
+        initialWindowHandles = driver.getWindowHandles();
+        ((JavascriptExecutor) driver).executeScript("window.open('" + url + "');");
+        wait.until(ExpectedConditions.numberOfWindowsToBe(initialWindowHandles.size() + 1));
+
+    }
+
+    @Then("User should be on the new window")
+    public void verifyUserIsOnNewWindow() {
+        Set<String> windowHandles = driver.getWindowHandles();
+        String newWindowHandle = null;
+        for (String handle : windowHandles) {
+            if (!initialWindowHandles.contains(handle)) {
+                newWindowHandle = handle;
+                break;
+            }
+        }
+        driver.switchTo().window(newWindowHandle);
+        Assert.assertEquals(newWindowHandle, driver.getWindowHandle(), "User is not on the new window");
     }
 
 
