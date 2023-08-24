@@ -60,6 +60,7 @@ public class BaseDefinitions {
         secondSearchPage = new org.pages.rozetkaPages.SearchPage(secondDriver, waitForSecondBrowser);
     }
 
+
     @And("User opens second browser for URL: {string}")
     public void openSecondBrowser(String MAIN_PAGE_URL) {
         WebDriverManager.chromedriver().setup();
@@ -96,7 +97,16 @@ public class BaseDefinitions {
         initialWindowHandles = driver.getWindowHandles();
         ((JavascriptExecutor) driver).executeScript("window.open('" + url + "');");
         wait.until(ExpectedConditions.numberOfWindowsToBe(initialWindowHandles.size() + 1));
+    }
 
+    @When("User switch to initial window")
+    public void switchInitialWindow() {
+        driver.switchTo().window(initialWindowHandles.iterator().next());
+    }
+
+    @Then("User should be on initial window")
+    public void verifyUSerISOnInitialWindow() {
+        Assert.assertEquals(driver.getWindowHandle(), initialWindowHandles.iterator().next(), "not in initial windows");
     }
 
     @Then("User should be on the new window")
